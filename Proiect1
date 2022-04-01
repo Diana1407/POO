@@ -28,18 +28,14 @@ public:
 
     const Card& operator--();
     const Card operator--(int);
-    const Card& operator-(const Card& c)
+    const void operator - ( const Card& c)
     {
-        Card a;
-        a.bani_pe_card = this->bani_pe_card - c.bani_pe_card;
-        return a;
+        this->bani_pe_card = this->bani_pe_card - c.bani_pe_card;
     }
 
-    Card operator + (const Card& c)
+    const void operator + (const Card& c)
     {
-        Card a;
-        a.nr_plati = this->nr_plati + c.nr_plati;
-        return a;
+        this->nr_plati = this->nr_plati + c.nr_plati;
     }
 
     ///functionalitatea clasei : media aritmetica a atranzactiilor facute de pe card
