@@ -33,6 +33,11 @@ public:
         this->bani_pe_card = this->bani_pe_card - c.bani_pe_card;
     }
 
+    const void operator += (const Card& c)
+    {
+        this->bani_pe_card += c.bani_pe_card;
+    }
+
     const void operator + (const Card& c)
     {
         this->nr_plati = this->nr_plati + c.nr_plati;
@@ -43,16 +48,26 @@ public:
         float suma = 0;
         for (int i=0; i<nr_plati; i++)
             suma += val_plati[i];
+        if(suma > bani_pe_card)
+            return -1;
         return suma / nr_plati;
+    }
+
+    float total_plata()
+    {
+        float suma = 0;
+        for (int i=0; i<nr_plati; i++)
+            suma += val_plati[i];
     }
 
     ///Supraincarcarea operatorului ==
     bool operator == (const Card& c)
     {
-        if(this->nr_plati == nr_plati && this->bani_pe_card == bani_pe_card && this->cod_card == cod_card && this->val_plati == val_plati)
+        if(this->nr_plati == c.nr_plati && this->bani_pe_card == c.bani_pe_card && this->cod_card == c.cod_card && this->val_plati == c.val_plati)
             return true;
         return false;
     }
+
     ///Supraincarcarea operatorului >
     bool operator > (const Card& c)
     {
@@ -61,13 +76,34 @@ public:
         return false;
     }
 
+    explicit operator int()
+    {
+        return (int)this->bani_pe_card;
+    }
+
+    long get_cod();
+    void set_cod(long cod);
+
     int get_nr_plati();
     void set_nr_plati(int x);
 
     float get_bani();
     void set_bani(float x);
 
+    float* get_val_plati();
+    void set_val_palti(float *val_plati);
+
 };
+
+long Card::get_cod()
+{
+    return this->cod_card;
+}
+
+void Card::set_cod(long cod)
+{
+    this->cod_card = cod;
+}
 
 int Card:: get_nr_plati()  {
     return this->nr_plati;
@@ -87,6 +123,20 @@ void Card::set_bani(float x)
     this->bani_pe_card = x;
 }
 
+float* Card::get_val_plati()
+{
+    return this->val_plati;
+}
+
+void Card::set_val_palti(float* val_plati)
+{
+    int nr = this->get_nr_plati();
+    if(this->val_plati != NULL)
+        delete [] this->val_plati;
+    this->val_plati = new float[nr];
+    for(int i = 0; i < nr; i++)
+        this->val_plati[i] = val_plati[i];
+}
 
 const Card& Card::operator--()
 {
@@ -131,7 +181,7 @@ Card::Card(int cod_card)
 Card::Card(const Card& c)
 {
     this->cod_card = c.cod_card;
-    this->bani_pe_card = bani_pe_card;
+    this->bani_pe_card = c.bani_pe_card;
     this->nr_plati = c.nr_plati;
     this->val_plati = new float[this->nr_plati];
     for(int i=0; i<this->nr_plati; i++)
@@ -221,8 +271,7 @@ private:
     static int contor;
     const int IDClient;
     list<Card> lista_carduri;
-    //daca nu are card sa fac operatia + si sa creez un nou card <=> leg clasa client de card
-    //functionalitate pe clasa: schimb are_card din 0 pe 1 sau invers daca vrea sa renunte la card
+
 public:
     Client();
     Client(string nume, string prenume, int cifre_cnp, int* cnp);
@@ -235,12 +284,103 @@ public:
     friend ostream& operator<<(ostream& out, Client& c);
     Client operator + (const Card& c);
 
-    void set_cnp(int* cnp, int cifre_cnp);
+    int nr_carduri();
+
+    int get_cifre_cnp();
+    void set_cifre_cnp(int cifre_cnp);
+
     const int* get_cnp();
+    void set_cnp(int* cnp, int cifre_cnp);
+
+    string get_nume();
+    void set_nume(string nume);
+
+    string get_prenume();
+    void set_prenume(string prenume);
+
+    static int get_contor()
+    {
+        return contor;
+    }
+
+    const int get_id()
+    {
+        return IDClient;
+    }
+
+    int operator [](int i);
+    bool operator > (Client c);
 
 };
 
 int Client::contor = 0; //numaram clientii de la 0
+
+int Client::get_cifre_cnp()
+{
+    return this->cifre_cnp;
+}
+void Client::set_cifre_cnp(int cifre_cnp)
+{
+    this->cifre_cnp = cifre_cnp;
+}
+
+///Getter CNP
+const int* Client::get_cnp()
+{
+    return this->cnp;
+}
+
+///Setter CNP
+void Client ::set_cnp(int *cnp, int cifre_cnp)
+{
+    if(this->cnp != NULL)
+        delete [] this->cnp;
+    this->cifre_cnp = cifre_cnp;
+    this->cnp = new int[this->cifre_cnp];
+    for(int i = 0; i<this->cifre_cnp; i++)
+        this->cnp[i] = cnp[i];
+}
+
+string Client ::get_nume()
+{
+    return this->nume;
+}
+void Client ::set_nume(string nume)
+{
+    this->nume = nume;
+}
+
+string Client ::get_prenume()
+{
+    return this->prenume;
+}
+void Client::set_prenume(string prenume)
+{
+    this->prenume = prenume;
+}
+
+
+int Client :: nr_carduri()
+{
+    int l = this->lista_carduri.size();
+    return l;
+}
+
+bool Client::operator>(Client c)
+{
+    int nr1 = this->nr_carduri();
+    int nr2 = c.nr_carduri();
+    if(nr1>nr2)
+        return true;
+    return false;
+}
+
+int Client ::operator[](int i)
+{
+    if(0 <= i && i < this->cifre_cnp)
+        return this->cnp[i];
+    cout<<"Index introdus gresit";
+}
 
 ///constructor fara parametrii
 Client::Client():IDClient(contor++)
@@ -278,6 +418,7 @@ Client::Client(const Client& c):IDClient(contor++)
     this->cnp = new int[c.cifre_cnp];
     for(int i=0; i<c.cifre_cnp; i++)
         this->cnp[i] = c.cnp[i];
+    this->lista_carduri = c.lista_carduri;
 }
 
 ///Supraincarcarea operatorului =
@@ -293,25 +434,9 @@ Client& Client::operator=(const Client &c)
         this->cnp=new int[c.cifre_cnp];
         for(int i=0; i<c.cifre_cnp; i++)
             this->cnp[i] = c.cnp[i];
+        this->lista_carduri = c.lista_carduri;
     }
     return *this;
-}
-
-///Setter CNP - pot ca functionalitate sa intreb daca e gresit sa reintroduca
-void Client ::set_cnp(int *cnp, int cifre_cnp)
-{
-    if(this->cnp != NULL)
-        delete [] this->cnp;
-    this->cifre_cnp = cifre_cnp;
-    this->cnp = new int[this->cifre_cnp];
-    for(int i = 0; i<this->cifre_cnp; i++)
-        this->cnp[i] = cnp[i];
-}
-
-///Getter CNP
-const int* Client::get_cnp()
-{
-    return this->cnp;
 }
 
 ///Supraincarcarea operatorului +
@@ -329,9 +454,9 @@ Client Client:: operator +(const Card& c)
 ///Citire - supraincarcarea operatorului >>
 istream& operator>>(istream& in, Client& c)
 {
-    cout<<"Numele este:";
+    cout<<"Numele clientului este:";
     in>>c.nume;
-    cout<<"Prenumele este:";
+    cout<<"Prenumele clientului este:";
     in>>c.prenume;
     cout<<"Numarul de cifre din cnp este de:";
     in>>c.cifre_cnp;
@@ -341,12 +466,26 @@ istream& operator>>(istream& in, Client& c)
     c.cnp = new int[c.cifre_cnp];
     for(int i=0; i<c.cifre_cnp; i++)
         in>>c.cnp[i];
+    cout<<"Ati introdus corect cnp-ul? Daca da apasati tasta 1, daca nu tasta 0.\n";
+    int y;
+    cin>>y;
+    if(y==0)
+    {
+        cout<<"Reintroduceti cnp-ul(fiecare cifra cu spatiu intre ele): ";
+        if(c.cnp!=NULL)
+            delete [] c.cnp;
+        c.cnp = new int[c.cifre_cnp];
+        for(int i=0; i<c.cifre_cnp; i++)
+            in>>c.cnp[i];
+    }
     Card card;
     in>>card;
     c = c + card;
     while(true)
     {
-        cout<<"Mai vreti sa ii adaugati un card clientului? (0-nu, 1-da): ";
+        cout<<"Mai vreti sa ii adaugati un card clientului? \n"
+              "0 - nu\n "
+              "1 - da\n ";
         int x;
         in>>x;
         if(x == 1)
@@ -354,6 +493,7 @@ istream& operator>>(istream& in, Client& c)
             Card card;
             in>>card;
             c = c + card;
+
         }
         else
             break;
@@ -402,10 +542,53 @@ public:
     Tranzactie();
     Tranzactie(int numar, string dep_ex, float valoare, bool reusita);
     Tranzactie(const Tranzactie& t);
+
     Tranzactie & operator=(const Tranzactie& t);
-    //Tranzactie operator +(const Tranzactie& t);
+    float operator +(const Tranzactie& t);
+    const void operator * (int x);
+    const Tranzactie& operator++();
+    const Tranzactie& operator++(int);
+
     friend istream& operator>>(istream& in, Tranzactie& t);
     friend ostream& operator<<(ostream &out, const Tranzactie& t);
+
+
+    explicit operator int()
+    {
+        return (int)this->reusita;
+    }
+
+    bool operator<(const Tranzactie& t)
+    {
+        if(this->valoare<t.valoare)
+            return true;
+        return false;
+    }
+
+    bool operator ==(const Tranzactie& t)
+    {
+        if(this->reusita == t.reusita && this->valoare == t.valoare)
+            return true;
+        return false;
+    }
+
+    int get_numar()
+    {
+        return this->numar;
+    }
+    void set_numar(int x)
+    {
+        this->numar = x;
+    }
+
+    float get_valoare()
+    {
+        return valoare;
+    }
+    void set_valoare(float x)
+    {
+        this->valoare = x;
+    }
 
     int get_dep_ex()
     {
@@ -416,24 +599,45 @@ public:
         else
             return -1;
     }
-    float get_valoare()
+    void set_dep_ex(string ce)
     {
-        return valoare;
+        this->dep_ex = ce;
     }
 
     bool get_reusita()
     {
         return reusita;
     }
-
-    bool operator<(const Tranzactie& t)
+    void set_reusita(bool x)
     {
-        if(this->valoare<t.valoare)
-            return true;
-        return false;
+        this->reusita = x;
     }
-
 };
+
+const Tranzactie& Tranzactie ::operator++()
+{
+    this->valoare++;
+    return *this;
+}
+
+const Tranzactie& Tranzactie::operator++(int)
+{
+    Tranzactie aux(*this);
+    this->valoare++;
+    return aux;
+}
+
+float Tranzactie:: operator +(const Tranzactie& t)
+{
+    float total =  this->valoare + t.valoare;
+    return total;
+}
+
+const void Tranzactie::operator*(int x)
+{
+    float v = this->get_valoare();
+    this->set_valoare(v*x);
+}
 
 ///Cosntrcutor fara parametrii
 Tranzactie::Tranzactie()
@@ -527,6 +731,7 @@ public:
     Banca & operator = (const Banca& b);
     Banca operator + (const Tranzactie& t);
     Banca operator + (const Client& b);
+    Banca operator - (const Tranzactie&t);
 
     ~Banca();
 
@@ -550,6 +755,17 @@ public:
     Banca& operator ++();
     Banca operator ++(int);
 
+    Banca operator --();
+    Banca operator --(int);
+
+    Banca operator +=(double x);
+    Banca operator -=(double x);
+
+
+    explicit operator int()
+    {
+        return (int)this->bani_in_banca;
+    }
     /*float get_retragere_maxima()
     {
         return retragre_maxima;
@@ -561,6 +777,16 @@ public:
     void set_nume(char* nume)
     {
         strcpy(this->nume, nume);
+    }
+
+    double get_bani_in_banca()
+    {
+        return bani_in_banca;
+    }
+
+    void set_bani_in_banca(double bani_in_banca)
+    {
+        this->bani_in_banca = bani_in_banca;
     }
 
     ///functionalitate pe banca: modificarea sumei din banca
@@ -638,14 +864,30 @@ Banca Banca:: operator +(const Tranzactie& t)
     return *this;
 }
 
+
 Banca Banca ::operator+(const Client& c)
 {
     this->lista_clienti.push_back(c);
     return *this;
 }
 
-/*
-void Banca::stergereTranzactie(const Tranzactie &t)
+Banca Banca ::operator -(const Tranzactie& t)
+{
+    this->lista_tranzactii.pop_back();
+    return *this;
+}
+
+Banca Banca ::operator +=(double x)
+{
+    this->bani_in_banca += x;
+}
+
+Banca Banca::operator -=(double x)
+{
+    this->bani_in_banca -= x;
+}
+
+/*void Banca::stergereTranzactie(const Tranzactie &t)
 {
     Tranzactie *listaTranzactieAux;
     int nr = 0;
@@ -662,6 +904,32 @@ void Banca::stergereTranzactie(const Tranzactie &t)
         delete [] lista_tranzactii;
 }*/
 
+///Supraincarcarea operatorului ++
+Banca& Banca::operator++()
+{
+    this->bani_in_banca++;
+    return *this;
+}
+
+Banca Banca::operator++(int)
+{
+    Banca aux(*this);
+    this->bani_in_banca++;
+    return aux;
+}
+
+Banca Banca::operator--()
+{
+    this->bani_in_banca--;
+    return * this;
+}
+Banca Banca::operator--(int)
+{
+    Banca aux(*this);
+    this->bani_in_banca--;
+    return aux;
+}
+
 ///Citire: supraincarcarea operatorului >>
 istream& operator>>(istream& in, Banca& b)
 {
@@ -677,13 +945,71 @@ istream& operator>>(istream& in, Banca& b)
     in>>b.bani_in_banca;
     while(true)
     {
-        cout<<"1 - adaugare tranzactie /2 - adaugare client /3 - exit";
+        while (true)
+        {
+            cout<<"Vreti sa cresteti sau sa micsorati valoarea banilor din banca?\n"
+                  "Apasati 1 pentru crestere cu 1\n"
+                  "        2 pentru micsorare cu 1\n"
+                  "        3 pentru a creste cu o valoarea data\n"
+                  "        4 pentru a micsora cu o valoare data\n"
+                  "        5 pentru a merge mai departe fara a face modificari\n";
+            int ok;
+            cin>>ok;
+            if(ok == 1)
+                b++;
+            else if(ok == 2)
+                b--;
+            else if(ok == 3)
+            {
+                int k;
+                cout<<"Cititi cu cat vreti sa mariti valoarea banilor din banca.\n";
+                cin>>k;
+                b += k;
+            }
+            else if(ok == 4)
+            {
+                int k;
+                cout<<"Cititi cu cat vreti sa micsorati valoarea banilor din banca.\n";
+                cin>>k;
+                double bani = b.get_bani_in_banca();
+                if(k > bani)
+                    cout<<"Operatia nu poate avea loc\n";
+                else
+                    b -= k;
+            }
+                break;
+        }
+        cout<<"Doriti sa facem o aproximare a banilor din banca? Daca da apassati 1, altfel apasati 0. \n";
+        int ok;
+        cin>>ok;
+        if(ok == 1)
+            cout<<b.operator int();
+        else {}
+        cout<<"\n";
+
+        cout<<"-----------------------MENIUL BANCII------------------------\n"
+              "1 - adaugare tranzactie \n"
+              "2 - adaugare client \n"
+              "3 - exit \n";
         int x;
         cin>>x;
         if(x==1)
         {
             Tranzactie t;
-            in>>t;
+            cin>>t;
+            cout<<"Daca este o tranzactie lunara puteti sa o faceti tranzactie pe un numar x luni,"
+                  " apasand tasta 1, altfel apaasati 0\n";
+            int y;
+            in>>y;
+            if(y == 1)
+            {
+                int luni;
+                cout<<"Introduceti numarul de luni pe care vreti sa faceti tranzactia: ";
+                cin>>luni;
+                t * luni;
+            }
+            else{}
+
             //b.lista_tranzactii.push_back(t);
             b = b + t;
             int c = t.get_dep_ex();
@@ -702,24 +1028,25 @@ istream& operator>>(istream& in, Banca& b)
                         b.bani_dupa_retragere(t.get_valoare());
                         cout<<"Noua suma din banca este de: "<<b.bani_in_banca<<endl;
                     }
+
                     else
-                        cout<<"Nu exista suficienti bani in banca pentru a se realiza retragerea";
-
+                        cout<<"Nu exista suficienti bani in banca pentru a se realiza retragerea\n";
                 }
-            if (c == -1)
-                cout<<"Operatie invalida\n";
-
+                if (c == -1)
+                    cout<<"Operatie invalida\n";
         }
+
         else if(x==2)
         {
             Client c;
             in>>c;
             b = b + c;
-
         }
+
         else
             break;
     }
+
     return in;
 }
 
@@ -728,47 +1055,38 @@ ostream& operator<<(ostream& out, Banca& b)
 {
     out<<"Numele este: "<<b.nume<<endl;
     out<<"Suma de bani care se afla in banca este de: "<<b.bani_in_banca<<endl;
-    list<Tranzactie>::iterator it;
-    out<<"-------------------Tranzactii pe banca----------------------";
-    for (it = b.lista_tranzactii.begin(); it!=b.lista_tranzactii.end(); it++)
+    if(b.lista_tranzactii.size() > 0)
     {
-        out<<"---------------------------------------------------------------------------------------\n";
-        out<<*it<<endl;
+        list<Tranzactie>::iterator it;
+        out<<"-------------------Tranzactii pe banca----------------------";
+        for (it = b.lista_tranzactii.begin(); it!=b.lista_tranzactii.end(); it++)
+        {
+            out<<"---------------------------------------------------------------------------------------\n";
+            out<<*it<<endl;
+        }
     }
 
-    list<Client>::iterator i;
-    out<<"---------------------------Clienti-----------------------------";
-    for(i = b.lista_clienti.begin(); i!=b.lista_clienti.end();i++)
+    if(b.lista_clienti.size() > 0)
     {
-        out<<"---------------------------------------------------------------------------------------\n";
-        out<<*i<<endl;
+        list<Client>::iterator i;
+        out<<"---------------------------Clienti-----------------------------";
+        for(i = b.lista_clienti.begin(); i!=b.lista_clienti.end();i++)
+        {
+            out<<"---------------------------------------------------------------------------------------\n";
+            out<<*i<<endl;
+        }
     }
+
     return out;
-}
-
-
-///Supraincarcarea operatorului ++
-Banca& Banca::operator++()
-{
-    this->bani_in_banca++;
-    return *this;
-}
-
-Banca Banca::operator++(int)
-{
-    Banca aux(*this);
-    this->bani_in_banca++;
-    return aux;
 }
 
 int main()
 {
-    Card c1,c2;
+    /*Card c1,c2;
     cin>>c1;
     cin>>c2;
-    Card c3 = c1-c2;
-    cout<<c3.get_bani();
-
+    c1-c2;
+    cout<<c1.get_bani();*/
 
 
     /*cin>>c2;
@@ -777,5 +1095,50 @@ int main()
     Card c3 = c1 + c2;
     cout<<c3.get_nr_plati();*/
 
+
+    //Banca b;
+    //cin>>b;
+    //cout<<b;
+    //Client c1,c2;
+    //cin>>c1>>c2;
+    //cout<<(c1>c2);
+
+    /*Card c;
+    cin>>c;
+    if(c.media_platilor() == -1)
+        cout<<"Platile nu se pot realiza deoarece nu exista suficienti bani pe card\n";
+    else
+    {
+        cout<<c.media_platilor()<<endl;
+        float bani = c.get_bani();
+        float total = c.total_plata();
+        bani -= total;
+        c.set_bani(bani);
+    }
+    cout<<c.get_bani();*/
+
+    /*Client c1,c2;
+    cin>>c1>>c2;
+    if(c1>c2)
+        cout<<"Primul client are mai multe carduri decat al doilea";
+    else
+        cout<<"Al doilea client are mai multe carduri decat primul";*/
+
+
+    while(true)
+    {
+        cout<<"Apasati: 1 pentru adaugarea unei banci\n"
+              "         2 pentru exit\n";
+        int x;
+        cin>>x;
+        if(x == 1)
+        {
+            Banca b;
+            cin>>b;
+            cout<<b;
+        }
+        else
+            break;
+    }
     return 0;
 }
