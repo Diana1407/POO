@@ -1,3 +1,0 @@
-C:/Users/diana/CLionProjects/Proiect2.1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-C:/Users/diana/CLionProjects/Proiect2.1/cmake-build-debug/CMakeFiles/Proiect2_1.dir
-C:/Users/diana/CLionProjects/Proiect2.1/cmake-build-debug/CMakeFiles/edit_cache.dir
